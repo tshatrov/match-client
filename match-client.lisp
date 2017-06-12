@@ -2,8 +2,6 @@
 
 (defvar *base-url* "")
 (defvar *local-tag* "")
-(defvar *cache-file* "")
-(defvar *root-dirs* '())
 
 (load (asdf:system-relative-pathname :match-client "settings.lisp") :if-does-not-exist nil)
 
@@ -41,3 +39,4 @@
    :method :delete
    :content `(("filepath" . ,(get-path path :use-tag use-tag)))
    ))
+

@@ -8,3 +8,6 @@
 
 (defparameter *root-dirs* '())
 
+(defparameter *allowed-types* '("jpg" "png"))
+
+(defparameter *max-file-size* 10000000)

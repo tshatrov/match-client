@@ -5,8 +5,12 @@
   :author "Timofei Shatrov <timofei.shatrov@gmail.com>"
   :license "MIT"
   :depends-on (#:dexador
-               #:jsown)
+               #:alexandria
+               #:jsown
+               #:cl-store)
   :serial t
   :components ((:file "package")
-               (:file "match-client")))
+               (:file "cache")
+               (:file "match-client")
+               ))
 
