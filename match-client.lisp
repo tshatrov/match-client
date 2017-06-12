@@ -15,7 +15,8 @@
 
 (defun parse-request (&rest args)
   (multiple-value-bind (content return-code)
-      (apply 'drakma:http-request args)
+      (handler-bind ((dex:http-request-failed #'dex:ignore-and-continue))
+        (apply 'dex:request args))
     (cond
       ((<= 400 return-code 499)
        (jsown:new-js
@@ -30,15 +31,13 @@
   (parse-request
    (api-url "/add")
    :method :post
-   :form-data t
-   :parameters `(("image" . ,(pathname file))
-                 ("filepath" . ,(get-path (or path file) :use-tag use-tag))
-                 ("metadata" . ,metadata))))
+   :content `(("image" . ,(pathname file))
+              ("filepath" . ,(get-path (or path file) :use-tag use-tag))
+              ("metadata" . ,metadata))))
 
 (defun delete-path (path &key (use-tag t))
   (parse-request
    (api-url "/delete")
    :method :delete
-   :form-data t
-   :parameters `(("filepath" . ,(get-path path :use-tag use-tag)))
+   :content `(("filepath" . ,(get-path path :use-tag use-tag)))
    ))
