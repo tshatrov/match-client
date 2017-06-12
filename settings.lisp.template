@@ -1,6 +1,6 @@
 (in-package #:match-client)
 
-(defparameter *base-url* "http://match.example.com/")
+(defparameter *base-url* "http://match.example.com")
 
 (defparameter *local-tag* "HOME")
 
