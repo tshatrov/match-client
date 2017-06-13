@@ -3,6 +3,7 @@
 (defvar *cache-file* "")
 (defvar *root-dirs* '())
 (defvar *allowed-types* '("jpg" "png"))
+(defvar *max-file-size* 10000000)
 
 ;; *** the following is copied from sync-sbcl
 
@@ -35,6 +36,7 @@
    (mtime :initarg :mtime :reader mtime)
    (ctime :initarg :ctime :reader ctime)
    (status :initform nil :accessor status)
+   (message :initform nil :accessor message)
    ))
 
 (defmethod print-object ((obj file) stream)
@@ -94,5 +96,11 @@
               (setf (status value) :toobig))))
      cache)
     cache))
-                 
-       
+
+(defun stat-cache (cache)
+  (loop with stat
+     for value being each hash-value in cache
+     for status = (status value)
+     for ass = (assoc status stat)
+     if ass do (incf (cdr ass)) else do (push (cons status 1) stat)
+     finally (return (sort stat '> :key 'cdr))))

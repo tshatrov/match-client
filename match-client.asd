@@ -7,7 +7,8 @@
   :depends-on (#:dexador
                #:alexandria
                #:jsown
-               #:cl-store)
+               #:cl-store
+               #:pcall)
   :serial t
   :components ((:file "package")
                (:file "cache")

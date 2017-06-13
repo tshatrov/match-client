@@ -40,3 +40,29 @@
    :content `(("filepath" . ,(get-path path :use-tag use-tag)))
    ))
 
+
+(defvar *cache*)
+(defvar *cache-lock* (bordeaux-threads:make-lock "match-cache-lock"))
+(defvar *msg-lock* (bordeaux-threads:make-lock "match-msg-lock"))
+
+(defun format-msg (str &rest args)
+  (terpri)
+  (apply 'format t str args)
+  (force-output))
+
+(defun worker (file)
+  (lambda ()
+    (let ((filepath (get-path (namestring (path file)))))
+      (bordeaux-threads:with-lock-held (*msg-lock*)
+        (format-msg "Action ~a for ~a" (status file) filepath))
+      (bordeaux-threads:with-lock-held (*cache-lock*)
+        (setf (status file) :ok)))))
+
+(defun update (&key (threads 10))
+  (format-msg "Updating cache...")
+  (force-output)
+  (setf *cache* (update-cache))
+  (format-msg "Stat: ~a" (stat-cache *cache*))
+  (pcall:with-local-thread-pool (:size threads)
+    (loop for value in (alexandria:hash-table-values *cache*)
+       do (pcall:pcall (worker value)))))
