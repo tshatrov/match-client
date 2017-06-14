@@ -8,6 +8,7 @@
 ;; *** the following is copied from sync-sbcl
 
 ;; defining wstat, which works with unicode filenames
+#+os-windows
 (sb-posix::define-stat-call "_wstat"
     sb-posix::pathname sb-posix::filename
     (function sb-posix::int (sb-posix::c-string :external-format :ucs-2)
@@ -15,7 +16,7 @@
 
 (defun ewstat (name)
   ;;(format t "Processing ~a~%" name) (force-output)
-  (handler-case (sb-posix::wstat name)
+  (handler-case #+os-windows (sb-posix::wstat name) #+os-unix (sb-posix:stat name)
     (error ()
       (error "Error while accessing file: ~a" name))))
 
