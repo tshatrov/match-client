@@ -15,6 +15,7 @@
               (* sb-posix::alien-stat)))
 
 (defun ewstat (name)
+  (declare (optimize (speed 0)))
   ;;(format t "Processing ~a~%" name) (force-output)
   (handler-case #+os-windows (sb-posix::wstat name) #+os-unix (sb-posix:stat name)
     (error ()
