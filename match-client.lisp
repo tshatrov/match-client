@@ -14,7 +14,7 @@
 (defun parse-request (&rest args)
   (multiple-value-bind (content return-code)
       (handler-bind ((dex:http-request-failed #'dex:ignore-and-continue))
-        (apply 'dex:request args))
+        (apply 'dex:request args #-(and)(append args '(:verbose t :keep-alive nil :use-connection-pool nil))))
     (cond
       ((<= 400 return-code 499)
        (jsown:new-js
@@ -60,7 +60,7 @@
     (force-output)))
 
 (defun worker (file)
-  (lambda ()
+  (lparallel:future
     (let ((filepath (get-path (namestring (path file)))))
       (case (status file)
         ((:new :update :error)
@@ -89,8 +89,10 @@
   (force-output)
   (setf *cache* (update-cache))
   (format-msg "Stat: ~a" (stat-cache *cache*))
-  (pcall:with-local-thread-pool (:size threads)
+  (let ((lparallel:*kernel* (lparallel:make-kernel threads)))
     (loop for value in (alexandria:hash-table-values *cache*)
-       do (pcall:pcall (worker value))))
+       collect (worker value) into futures
+       finally (map nil 'lparallel:force futures))
+    (lparallel:end-kernel))
   (format-msg "Final stat: ~a" (stat-cache *cache*))
   (save-cache *cache*))

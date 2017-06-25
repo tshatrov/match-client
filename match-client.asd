@@ -8,7 +8,7 @@
                #:alexandria
                #:jsown
                #:cl-store
-               #:pcall)
+               #:lparallel)
   :serial t
   :components ((:file "package")
                (:file "cache")
