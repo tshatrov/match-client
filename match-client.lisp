@@ -33,6 +33,15 @@
               ("filepath" . ,(get-path (or path file) :use-tag use-tag))
               ("metadata" . ,metadata))))
 
+(defun add-url (url &key path (metadata "{}"))
+  "Add remote image to Match server"
+  (parse-request
+   (api-url "/add")
+   :method :post
+   :content `(("url" . ,url)
+              ("filepath" . ,(or path url))
+              ("metadata" . ,metadata))))
+
 (defun delete-path (path &key (use-tag t))
   (parse-request
    (api-url "/delete")
@@ -46,7 +55,10 @@
                  :method :post
                  :content `(("url" . ,url)))))
     (cond ((string= (jsown:val result "status") "ok")
-           (jsown:val result "result"))
+           (mapcar (lambda (match &aux (score (jsown:val match "score")))
+                     (unless (integerp score) (setf (jsown:val match "score") (float score)))
+                     match)
+                   (jsown:val result "result")))
           (t (error "Error: ~a" result)))))
 
 (defvar *cache*)
