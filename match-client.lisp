@@ -54,7 +54,7 @@
                  (api-url "/search")
                  :method :post
                  :content `(("url" . ,url)))))
-    (cond ((string= (jsown:val result "status") "ok")
+    (cond ((string= (or (jsown::val-safe result "status") "fail") "ok")
            (mapcar (lambda (match &aux (score (jsown:val match "score")))
                      (unless (integerp score) (setf (jsown:val match "score") (float score)))
                      match)
@@ -78,7 +78,7 @@
         ((:new :update :error)
          (format-msg "Action ~a for ~a" (status file) filepath)
          (let ((result (add-local (path file))))
-           (cond ((string= (jsown:val result "status") "ok")
+           (cond ((string= (or (jsown::val-safe result "status") "fail") "ok")
                   (setf (status file) :ok)
                   (format-msg "Finished updating ~a" filepath))
                  (t
@@ -88,7 +88,7 @@
          (format-msg "Action ~a for ~a" (status file) filepath)
          (let ((result (delete-path filepath))
                (key (namestring (path file))))
-           (cond ((string= (jsown:val result "status") "ok")
+           (cond ((string= (or (jsown::val-safe result "status") "fail") "ok")
                   (bordeaux-threads:with-lock-held (*cache-lock*)
                     (remhash key *cache*))
                   (format-msg "Finished deleting ~a" filepath))
@@ -102,9 +102,10 @@
   (setf *cache* (update-cache))
   (format-msg "Stat: ~a" (stat-cache *cache*))
   (let ((lparallel:*kernel* (lparallel:make-kernel threads)))
-    (loop for value in (alexandria:hash-table-values *cache*)
-       collect (worker value) into futures
-       finally (map nil 'lparallel:force futures))
-    (lparallel:end-kernel))
+    (unwind-protect
+         (loop for value in (alexandria:hash-table-values *cache*)
+            collect (worker value) into futures
+            finally (map nil 'lparallel:force futures))
+      (lparallel:end-kernel)))
   (format-msg "Final stat: ~a" (stat-cache *cache*))
   (save-cache *cache*))
