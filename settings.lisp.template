@@ -11,3 +11,5 @@
 (defparameter *allowed-types* '("jpg" "png"))
 
 (defparameter *max-file-size* 10000000)
+
+(defparameter *max-dimension* 2048)

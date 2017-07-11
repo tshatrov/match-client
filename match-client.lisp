@@ -71,13 +71,24 @@
     (apply 'format t str args)
     (force-output)))
 
+(defun add-resized (path)
+  (uiop:with-temporary-file (:pathname tmp :prefix "match-thumb" :type (pathname-type path))
+    (multiple-value-bind (out w h rw rh) (resize-image (namestring path) (namestring tmp))
+      (let ((metadata (jsown:new-js ("w" w) ("h" h))))
+        (cond
+          (out
+           (jsown:extend-js metadata ("rw" rw) ("rh" rh))
+           (add-local tmp :path path :metadata (jsown:to-json* metadata)))
+          (t
+           (add-local path :metadata (jsown:to-json* metadata))))))))
+
 (defun worker (file)
   (lparallel:future
     (let ((filepath (get-path (namestring (path file)))))
       (case (status file)
         ((:new :update :error)
          (format-msg "Action ~a for ~a" (status file) filepath)
-         (let ((result (add-local (path file))))
+         (let ((result (add-resized (path file))))
            (cond ((string= (or (jsown::val-safe result "status") "fail") "ok")
                   (setf (status file) :ok)
                   (format-msg "Finished updating ~a" filepath))

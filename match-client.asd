@@ -8,9 +8,11 @@
                #:alexandria
                #:jsown
                #:cl-store
-               #:lparallel)
+               #:lparallel
+               #:cl-graphicsmagick)
   :serial t
   :components ((:file "package")
+               (:file "image")
                (:file "cache")
                (:file "match-client")
                ))
