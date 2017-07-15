@@ -49,11 +49,13 @@
    :content `(("filepath" . ,(get-path path :use-tag use-tag)))
    ))
 
-(defun match (url)
+(defun match (url-or-path)
   (let ((result (parse-request
                  (api-url "/search")
                  :method :post
-                 :content `(("url" . ,url)))))
+                 :content (typecase url-or-path
+                            (pathname `(("image" . ,url-or-path)))
+                            (t `(("url" . ,url-or-path)))))))
     (cond ((string= (or (jsown::val-safe result "status") "fail") "ok")
            (mapcar (lambda (match &aux (score (jsown:val match "score")))
                      (unless (integerp score) (setf (jsown:val match "score") (float score)))
@@ -71,9 +73,9 @@
     (apply 'format t str args)
     (force-output)))
 
-(defun add-resized (path)
+(defun add-resized (path &rest resize-args)
   (uiop:with-temporary-file (:pathname tmp :prefix "match-thumb" :type (pathname-type path))
-    (multiple-value-bind (out w h rw rh) (resize-image (namestring path) (namestring tmp))
+    (multiple-value-bind (out w h rw rh) (apply 'resize-image (namestring path) (namestring tmp) resize-args)
       (let ((metadata (jsown:new-js ("w" w) ("h" h))))
         (cond
           (out
@@ -81,6 +83,11 @@
            (add-local tmp :path path :metadata (jsown:to-json* metadata)))
           (t
            (add-local path :metadata (jsown:to-json* metadata))))))))
+
+(defun match-resized (path &rest resize-args)
+  (uiop:with-temporary-file (:pathname tmp :prefix "match-thumb" :type (pathname-type path))
+    (let ((out (apply 'resize-image (namestring path) (namestring tmp) resize-args)))
+      (if out (match tmp) (match path)))))
 
 (defun worker (file)
   (lparallel:future
