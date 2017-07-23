@@ -2,6 +2,8 @@
 
 (defparameter *base-url* "http://match.example.com")
 
+(defparameter *auth* '("username" . "password"))
+
 (defparameter *local-tag* "HOME")
 
 (defparameter *cache-file* "/home/match-cache")

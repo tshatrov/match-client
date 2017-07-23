@@ -2,6 +2,7 @@
 
 (defvar *base-url* "")
 (defvar *local-tag* "")
+(defvar *auth* nil)
 
 (load (asdf:system-relative-pathname :match-client "settings.lisp") :if-does-not-exist nil)
 
@@ -14,6 +15,8 @@
 (defun parse-request (&rest args)
   (multiple-value-bind (content return-code)
       (handler-bind ((dex:http-request-failed #'dex:ignore-and-continue))
+        (when *auth*
+          (setf args `(,@args :basic-auth ,*auth*)))
         (apply 'dex:request args #-(and)(append args '(:verbose t :keep-alive nil :use-connection-pool nil))))
     (cond
       ((<= 400 return-code 499)
