@@ -4,6 +4,9 @@
 (defvar *local-tag* "")
 (defvar *auth* nil)
 
+(defvar *needs-referer*
+  '(("^http(s)?://i.pximg.net/" . "https://www.pixiv.net")))
+
 (load (asdf:system-relative-pathname :match-client "settings.lisp") :if-does-not-exist nil)
 
 (defun api-url (path)
@@ -52,19 +55,37 @@
    :content `(("filepath" . ,(get-path path :use-tag use-tag)))
    ))
 
-(defun match (url-or-path)
+(defun download-with-ref (out url referer)
+  (multiple-value-bind (content code)
+      (dex:request url :headers `(("Referer" . ,referer))
+                   :force-binary t :want-stream t)
+    (when (= code 200)
+      (with-open-file (stream out :direction :output :if-exists :supersede
+                              :element-type :default)
+        (uiop:copy-stream-to-stream content stream :element-type '(unsigned-byte 8)))
+      out)))
+
+(defun match* (content)
   (let ((result (parse-request
                  (api-url "/search")
                  :method :post
-                 :content (typecase url-or-path
-                            (pathname `(("image" . ,url-or-path)))
-                            (t `(("url" . ,url-or-path)))))))
+                 :content content)))
     (cond ((string= (or (jsown::val-safe result "status") "fail") "ok")
            (mapcar (lambda (match &aux (score (jsown:val match "score")))
                      (unless (integerp score) (setf (jsown:val match "score") (float score)))
                      match)
                    (jsown:val result "result")))
           (t (error "Error: ~a" result)))))
+
+(defun match (url-or-path)
+  (typecase url-or-path
+    (pathname (match* `(("image" . ,url-or-path))))
+    (t (loop for (regex . referer) in *needs-referer*
+          if (ppcre:scan regex url-or-path)
+          do (return (uiop:with-temporary-file (:pathname tmp :prefix "match-dl" :type (pathname-type url-or-path))
+                       (download-with-ref tmp url-or-path referer)
+                       (match* `(("image" . ,tmp)))))
+          finally (return (match* `(("url" . ,url-or-path))))))))
 
 (defvar *cache*)
 (defvar *cache-lock* (bordeaux-threads:make-lock "match-cache-lock"))

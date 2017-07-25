@@ -9,6 +9,7 @@
                #:jsown
                #:cl-store
                #:lparallel
+               #:cl-ppcre
                #:cl-graphicsmagick)
   :serial t
   :components ((:file "package")
