@@ -4,7 +4,12 @@
   (:use #:cl)
   (:export
    #:add-local
+   #:add-url
+   #:add-resized
    #:delete-path
    #:match
-   #:update))
+   #:match-resized
+   #:update
+   #:get-path
+   ))
 
