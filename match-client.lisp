@@ -3,6 +3,7 @@
 (defvar *base-url* "")
 (defvar *local-tag* "")
 (defvar *auth* nil)
+(defvar *debug* nil)
 
 (defvar *needs-referer*
   '(("^http(s)?://i.pximg.net/" . "https://www.pixiv.net")))
@@ -16,11 +17,18 @@
   (format nil "~@[[~a] ~]~a" (and use-tag *local-tag*) path))
 
 (defun parse-request (&rest args)
+  (when *auth*
+    (setf args `(,@args :basic-auth ,*auth*)))
+  (when *debug*
+    (setf args (append args '(:verbose t)))) ;; :keep-alive nil :use-connection-pool nil
+  
   (multiple-value-bind (content return-code)
-      (handler-bind ((dex:http-request-failed #'dex:ignore-and-continue))
-        (when *auth*
-          (setf args `(,@args :basic-auth ,*auth*)))
-        (apply 'dex:request args #-(and)(append args '(:verbose t :keep-alive nil :use-connection-pool nil))))
+      (prog ((retries 0))
+       retry
+       (handler-bind
+           ((dex:http-request-failed #'dex:ignore-and-continue)
+            (stream-error (lambda (e) (declare (ignore e)) (when (< retries 3) (incf retries) (go retry)))))
+         (return (apply 'dex:request args))))
     (cond
       ((<= 400 return-code 499)
        (jsown:new-js
