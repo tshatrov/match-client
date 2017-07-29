@@ -1,5 +1,7 @@
 Common Lisp client for [MATCH](https://github.com/pavlovai/match) (reverse image search). Allows you to reverse image search your local files from anywhere!
 
+[Read the technical blog post for more info about this thing](http://readevalprint.tumblr.com/post/163569150438/your-personal-diy-image-search).
+
 Features
 ========
 
