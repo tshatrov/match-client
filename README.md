@@ -9,7 +9,18 @@ Features
 Installation
 ============
 
+1. match-client only works with [SBCL](http://www.sbcl.org).
+1. All the requirements except [cl-graphicsmagick](https://github.com/muyinliu/cl-graphicsmagick) are installable through quicklisp. Install [graphicsmagick](http://www.graphicsmagick.org/) libraries and cl-graphicsmagick manually. Note that there are issues with using graphicsmagick on Linux, see below.
 1. Set up [MATCH](https://github.com/pavlovai/match) server.
 2. Copy `settings.lisp.template` to `settings.lisp` and change the settings appropriately.
 3. Run `(update)` to upload all the images in `*root-dirs*` to the server.
 4. Next time you run `(update)` only files that changed will be updated. Deleted files will also be cleared from the server.
+
+Known issues
+============
+
+There might be a problem with calling graphicsmagick on Linux from SBCL with the latter crashing right into a debugger (ldb). I recommend installing graphicsmagick from source, and comment out the following line in `magick.c`.
+
+```
+InitializeMagickSignalHandlers(); /* Signal handlers */
+```
