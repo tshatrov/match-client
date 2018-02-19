@@ -52,4 +52,5 @@
        (cond ((= code 302)
               (parse-twigaten-response
                (dex:request (format nil *twigaten-root* (gethash "location" headers)))))
-             (t content))))))
+             ((= code 200) nil)
+             (t (values content code)))))))
