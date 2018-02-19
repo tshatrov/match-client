@@ -64,14 +64,17 @@
    ))
 
 (defun download-with-ref (out url referer)
-  (multiple-value-bind (content code)
-      (dex:request url :headers `(("Referer" . ,referer))
-                   :force-binary t :want-stream t)
-    (when (= code 200)
-      (with-open-file (stream out :direction :output :if-exists :supersede
-                              :element-type :default)
-        (uiop:copy-stream-to-stream content stream :element-type '(unsigned-byte 8)))
-      out)))
+  (let ((dex:*use-connection-pool* nil))
+    (multiple-value-bind (content code)
+        (dex:request url :headers `(("Referer" . ,referer))
+                     :force-binary t :want-stream t)
+      (unwind-protect
+           (when (= code 200)
+             (with-open-file (stream out :direction :output :if-exists :supersede
+                                     :element-type :default)
+               (uiop:copy-stream-to-stream content stream :element-type '(unsigned-byte 8)))
+             out)
+        (ignore-errors (close content))))))
 
 (defun match* (content)
   (let ((result (parse-request
@@ -85,15 +88,26 @@
                    (jsown:val result "result")))
           (t (error "Error: ~a" result)))))
 
-(defun match (url-or-path)
+(defun call-on-download (fn url &optional (referer ""))
+  (uiop:with-temporary-file (:pathname tmp :prefix "match-dl" :type (pathname-type url))
+    (download-with-ref tmp url referer)
+    (funcall fn tmp)))
+
+(defun call-on-url-or-path (url-or-path fn-path &optional fn-url)
   (typecase url-or-path
-    (pathname (match* `(("image" . ,url-or-path))))
+    (pathname (funcall fn-path url-or-path))
     (t (loop for (regex . referer) in *needs-referer*
           if (ppcre:scan regex url-or-path)
-          do (return (uiop:with-temporary-file (:pathname tmp :prefix "match-dl" :type (pathname-type url-or-path))
-                       (download-with-ref tmp url-or-path referer)
-                       (match* `(("image" . ,tmp)))))
-          finally (return (match* `(("url" . ,url-or-path))))))))
+          do (return (call-on-download fn-path url-or-path referer))
+          finally (return (if fn-url
+                              (funcall fn-url url-or-path)
+                              (call-on-download fn-path url-or-path)))))))
+
+(defun match (url-or-path)
+  (call-on-url-or-path
+   url-or-path
+   (lambda (f) (match* `(("image" . ,f))))
+   (lambda (f) (match* `(("url" . ,f))))))
 
 (defvar *cache*)
 (defvar *cache-lock* (bordeaux-threads:make-lock "match-cache-lock"))

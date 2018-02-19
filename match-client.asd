@@ -10,7 +10,8 @@
                #:cl-store
                #:lparallel
                #:cl-ppcre
-               #:cl-graphicsmagick)
+               #:cl-graphicsmagick
+               )
   :serial t
   :components ((:file "package")
                (:file "image")
@@ -18,3 +19,16 @@
                (:file "match-client")
                ))
 
+(asdf:defsystem #:match-client/twigaten
+  :description "Twigaten search addon"
+  :author "Timofei Shatrov <timofei.shatrov@gmail.com>"
+  :license "MIT"
+  :depends-on (#:match-client
+               #:cxml
+               #:closure-html
+               #:css-selectors
+               #:xpath
+               )
+  :serial t
+  :components ((:file "twigaten"))
+  )

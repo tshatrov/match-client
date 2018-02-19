@@ -11,5 +11,6 @@
    #:match-resized
    #:update
    #:get-path
+   #:call-on-url-or-path
    ))
 
