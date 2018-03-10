@@ -5,8 +5,12 @@
 (defvar *auth* nil)
 (defvar *debug* nil)
 
-(defvar *needs-referer*
-  '(("^http(s)?://i.pximg.net/" . "https://www.pixiv.net")))
+(defvar *browser-user-agent* "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0")
+
+(defvar *needs-headers*
+  `(("^http(s)?://i.pximg.net/" . (("Referer" . "https://www.pixiv.net")))
+    ("^http(s)?://desu-usergeneratedcontent.xyz/" . (("User-Agent" . ,*browser-user-agent*)))
+    ))
 
 (load (asdf:system-relative-pathname :match-client "settings.lisp") :if-does-not-exist nil)
 
@@ -63,10 +67,10 @@
    :content `(("filepath" . ,(get-path path :use-tag use-tag)))
    ))
 
-(defun download-with-ref (out url referer)
+(defun download-with-headers (out url &optional headers)
   (let ((dex:*use-connection-pool* nil))
     (multiple-value-bind (content code)
-        (dex:request url :headers `(("Referer" . ,referer))
+        (dex:request url :headers headers
                      :force-binary t :want-stream t)
       (unwind-protect
            (when (= code 200)
@@ -88,17 +92,17 @@
                    (jsown:val result "result")))
           (t (error "Error: ~a" result)))))
 
-(defun call-on-download (fn url &optional (referer ""))
+(defun call-on-download (fn url &optional headers)
   (uiop:with-temporary-file (:pathname tmp :prefix "match-dl" :type (pathname-type url))
-    (download-with-ref tmp url referer)
+    (download-with-headers tmp url headers)
     (funcall fn tmp)))
 
 (defun call-on-url-or-path (url-or-path fn-path &optional fn-url)
   (typecase url-or-path
     (pathname (funcall fn-path url-or-path))
-    (t (loop for (regex . referer) in *needs-referer*
+    (t (loop for (regex . headers) in *needs-headers*
           if (ppcre:scan regex url-or-path)
-          do (return (call-on-download fn-path url-or-path referer))
+          do (return (call-on-download fn-path url-or-path headers))
           finally (return (if fn-url
                               (funcall fn-url url-or-path)
                               (call-on-download fn-path url-or-path)))))))
