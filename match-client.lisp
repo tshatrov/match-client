@@ -7,9 +7,11 @@
 
 (defvar *browser-user-agent* "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0")
 
-(defvar *needs-headers*
-  `(("^http(s)?://i.pximg.net/" . (("Referer" . "https://www.pixiv.net")))
-    ("^http(s)?://desu-usergeneratedcontent.xyz/" . (("User-Agent" . ,*browser-user-agent*)))
+(defparameter *needs-headers*
+  `(("^http(s)?://i\\.pximg\\.net/" . (("Referer" . "https://www.pixiv.net")))
+    ("^http(s)?://desu-usergeneratedcontent\\.xyz/" . (("User-Agent" . ,*browser-user-agent*)))
+    ("^http(s)?://gazou\\.futabahokanko\\.com/" . ())
+    ("^http(s)?://.*\\.futabalog\\.com/" . ())
     ))
 
 (load (asdf:system-relative-pathname :match-client "settings.lisp") :if-does-not-exist nil)
@@ -25,7 +27,7 @@
     (setf args `(,@args :basic-auth ,*auth*)))
   (when *debug*
     (setf args (append args '(:verbose t)))) ;; :keep-alive nil :use-connection-pool nil
-  
+
   (multiple-value-bind (content return-code)
       (prog ((retries 0))
        retry
