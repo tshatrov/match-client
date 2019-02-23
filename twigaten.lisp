@@ -12,7 +12,7 @@
 
 (defun extract-value (doc xpath)
   (parse-integer
-   (dom:node-value 
+   (dom:node-value
     (xpath:first-node
      (xpath:evaluate xpath doc)))
    :junk-allowed t))
@@ -44,13 +44,14 @@
   (match-client:call-on-url-or-path
    url-or-path
    (lambda (f)
-     (multiple-value-bind (content code headers)
-         (dex:request *twigaten-search*
-                      :method :post
-                      :max-redirects 0
-                      :content `(("File" . ,(pathname f))))
-       (cond ((= code 302)
-              (parse-twigaten-response
-               (dex:request (format nil *twigaten-root* (gethash "location" headers)))))
-             ((= code 200) nil)
-             (t (values content code)))))))
+     (let ((dex:*use-connection-pool* nil))
+       (multiple-value-bind (content code headers)
+           (dex:request *twigaten-search*
+                        :method :post
+                        :max-redirects 0
+                        :content `(("File" . ,(pathname f))))
+         (cond ((= code 302)
+                (parse-twigaten-response
+                 (dex:request (format nil *twigaten-root* (gethash "location" headers)))))
+               ((= code 200) nil)
+               (t (values content code))))))))
