@@ -9,9 +9,7 @@
 
 (defparameter *needs-headers*
   `(("^http(s)?://i\\.pximg\\.net/" . (("Referer" . "https://www.pixiv.net")))
-    ("^http(s)?://desu-usergeneratedcontent\\.xyz/" . (("User-Agent" . ,*browser-user-agent*)))
-    ("^http(s)?://gazou\\.futabahokanko\\.com/" . ())
-    ("^http(s)?://.*\\.futabalog\\.com/" . ())
+    ("^http(s)?://.*\\.desu-usergeneratedcontent\\.xyz/" . (("User-Agent" . ,*browser-user-agent*)))
     ))
 
 (load (asdf:system-relative-pathname :match-client "settings.lisp") :if-does-not-exist nil)
@@ -166,7 +164,7 @@
                   (setf (status file) :error (message file) result)
                   (format-msg "Error deleting ~a: ~a" filepath result)))))))))
 
-(defun update (&key (threads 4))
+(defun update (&key (threads 2))
   (format-msg "Updating cache...")
   (force-output)
   (setf *cache* (update-cache))
