@@ -6,8 +6,8 @@
 
 (in-package #:match-client/twigaten)
 
-(defparameter *twigaten-root* "https://twigaten.204504byse.info/~a")
-(defparameter *twigaten-search* (format nil *twigaten-root* "Search/Media"))
+(defparameter *twigaten-root* "https://twigaten.204504byse.info~a")
+(defparameter *twigaten-search* (format nil *twigaten-root* "/search/media"))
 
 
 (defun extract-value (doc xpath)
@@ -27,9 +27,9 @@
 (defmethod initialize-instance :after ((obj twigaten-result) &key)
   (with-slots (url retweets likes document) obj
     (xpath:with-namespaces (("w" "http://www.w3.org/1999/xhtml"))
-      (setf url (dom:get-attribute (car (css:query "span.twigaten-twitterbird a" document)) "href")
-            retweets (extract-value document ".//w:span[contains(@class,'glyphicon-retweet')]/../following-sibling::text()[1]")
-            likes (extract-value document ".//w:span[contains(@class,'glyphicon-star')]/../following-sibling::text()[1]")))))
+      (setf url (dom:get-attribute (car (css:query "div.twigaten-usermargin > a" document)) "href")
+            retweets (extract-value document ".//w:a[contains(@href,'intent/retweet')]/following-sibling::text()[1]")
+            likes (extract-value document ".//w:a[contains(@href,'intent/favorite')]/following-sibling::text()[1]")))))
 
 (defmethod print-object ((obj twigaten-result) stream)
   (print-unreadable-object (obj stream :type nil :identity nil)
@@ -37,7 +37,7 @@
 
 (defun parse-twigaten-response (content)
   (let ((doc (chtml:parse content (cxml-dom:make-dom-builder))))
-      (loop for panel in (css:query "div.twigaten-panel" doc)
+      (loop for panel in (css:query "div.twigaten-tweet" doc)
          collect (make-instance 'twigaten-result :doc panel))))
 
 (defun lookup (url-or-path)
@@ -49,7 +49,7 @@
            (dex:request *twigaten-search*
                         :method :post
                         :max-redirects 0
-                        :content `(("File" . ,(pathname f))))
+                        :content `(("file" . ,(pathname f))))
          (cond ((= code 302)
                 (parse-twigaten-response
                  (dex:request (format nil *twigaten-root* (gethash "location" headers)))))
