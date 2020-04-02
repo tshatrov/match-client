@@ -6,12 +6,7 @@
 (defvar *debug* nil)
 
 (defvar *browser-user-agent* "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0")
-
-(defparameter *needs-headers*
-  `(("^http(s)?://.+\\.pximg\\.net/" . (("Referer" . "https://www.pixiv.net")))
-    ("^http(s)?://.+\\.desu-usergeneratedcontent\\.xyz/" . (("User-Agent" . ,*browser-user-agent*)))
-    ("^http(s)?://static\\.tvtropes\\.org/" . (("User-Agent" . ,*browser-user-agent*)))
-    ))
+(defvar *needs-headers* nil)
 
 (load (asdf:system-relative-pathname :match-client "settings.lisp") :if-does-not-exist nil)
 

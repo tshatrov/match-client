@@ -10,8 +10,13 @@
 
 (defparameter *root-dirs* '())
 
-(defparameter *allowed-types* '("jpg" "png"))
+(defparameter *allowed-types* '("jpg" "jpeg" "png"))
 
 (defparameter *max-file-size* 10000000)
 
 (defparameter *max-dimension* 2048)
+
+(defparameter *needs-headers*
+  `(("^http(s)?://.+\\.pximg\\.net/" . (("Referer" . "https://www.pixiv.net")))
+    ("^http(s)?://static\\.tvtropes\\.org/" . (("User-Agent" . ,*browser-user-agent*)))
+    ))
