@@ -140,6 +140,14 @@
     (let ((out (apply 'resize-image (namestring path) (namestring tmp) resize-args)))
       (if out (match tmp) (match path)))))
 
+(defun match-dir (path)
+  (let ((images (find-images path)))
+    (loop for img-file in images
+       for img-path = (path img-file)
+       for name = (namestring img-path)
+       for result = (or (match-resized img-path) :not-found)
+       collect (cons name result))))
+
 (defun worker (file)
   (lparallel:future
     (let ((filepath (get-path (namestring (path file)))))

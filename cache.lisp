@@ -61,7 +61,7 @@
   (cl-store:store cache *cache-file*))
 
 (defun find-images (root)
-  (loop for f in (uiop:directory-files root)
+  (loop for f in (uiop:directory-files (uiop:ensure-directory-pathname root))
      for type = (string-downcase (pathname-type f))
      when (find type *allowed-types* :test 'equal)
      collect (make-file f)))

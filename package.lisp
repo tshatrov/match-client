@@ -9,8 +9,8 @@
    #:delete-path
    #:match
    #:match-resized
+   #:match-dir
    #:update
    #:get-path
    #:call-on-url-or-path
    ))
-
