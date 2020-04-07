@@ -2,6 +2,8 @@
 
 (defvar *cache-file* "")
 (defvar *root-dirs* '())
+(defvar *exclude-dirs* '())
+(defvar *exclude-dirnames* '())
 (defvar *allowed-types* '("jpg" "png"))
 (defvar *max-file-size* 10000000)
 
@@ -69,12 +71,16 @@
 (defun find-images-rec (root)
   (nconc (find-images root)
          (loop for dir in (uiop:subdirectories root)
-            unless (alexandria:starts-with #\. (car (last (pathname-directory dir))))
+            for dirname = (car (last (pathname-directory dir)))
+            unless (or (alexandria:starts-with #\. dirname)
+                       (some (lambda (p) (equalp p dirname)) *exclude-dirnames*)
+                       (some (lambda (p) (uiop:pathname-equal p dir)) *exclude-dirs*))
             nconcing (find-images-rec dir))))
 
 (defun find-images-all ()
-  (loop for root in *root-dirs*
-     nconcing (find-images-rec root)))
+  (let ((*exclude-dirs* (mapcar 'uiop:ensure-directory-pathname *exclude-dirs*)))
+    (loop for root in *root-dirs*
+       nconcing (find-images-rec root))))
 
 (defun update-cache ()
   (let ((cache (load-cache))
