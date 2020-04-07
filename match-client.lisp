@@ -77,6 +77,7 @@
         (ignore-errors (close content))))))
 
 (defun match* (content)
+  (setf content (cons (cons "all_orientations" nil) content))
   (let ((result (parse-request
                  (api-url "/search")
                  :method :post
