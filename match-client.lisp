@@ -158,7 +158,7 @@
                   (format-msg "Error updating ~a: ~a" filepath result)))))
         (:delete
          (format-msg "Action ~a for ~a" (status file) filepath)
-         (let ((result (delete-path filepath))
+         (let ((result (delete-path (path file)))
                (key (namestring (path file))))
            (cond ((string= (or (jsown::val-safe result "status") "fail") "ok")
                   (bordeaux-threads:with-lock-held (*cache-lock*)
