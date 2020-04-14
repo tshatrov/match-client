@@ -104,11 +104,11 @@
                               (funcall fn-url url-or-path)
                               (call-on-download fn-path url-or-path)))))))
 
-(defun match (url-or-path)
+(defun match (url-or-path &optional download-p)
   (call-on-url-or-path
    url-or-path
    (lambda (f) (match* `(("image" . ,f))))
-   (lambda (f) (match* `(("url" . ,f))))))
+   (unless download-p (lambda (f) (match* `(("url" . ,f)))))))
 
 (defvar *cache*)
 (defvar *cache-lock* (bordeaux-threads:make-lock "match-cache-lock"))
