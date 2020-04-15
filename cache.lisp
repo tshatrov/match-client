@@ -4,7 +4,7 @@
 (defvar *root-dirs* '())
 (defvar *exclude-dirs* '())
 (defvar *exclude-dirnames* '())
-(defvar *allowed-types* '("jpg" "png"))
+(defvar *allowed-types* '("jpg" "jpeg" "png" "webp"))
 (defvar *max-file-size* 10000000)
 
 ;; *** the following is copied from sync-sbcl
