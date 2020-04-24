@@ -17,6 +17,7 @@
                (:file "image")
                (:file "cache")
                (:file "match-client")
+               (:file "viewer")
                ))
 
 (asdf:defsystem #:match-client/twigaten
