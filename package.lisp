@@ -13,4 +13,7 @@
    #:update
    #:get-path
    #:call-on-url-or-path
+   #:view-file
+   #:view-file-native
+   #:view-file-slime
    ))
