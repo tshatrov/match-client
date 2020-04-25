@@ -32,9 +32,6 @@
   #-swank
   (view-file-native file))
 
-
-
-
 (defun generate-map (target)
   (setf target (uiop:ensure-directory-pathname target))
   (loop for i from 0
@@ -45,16 +42,24 @@
 (defun print-choices (choices &optional s)
   (format s "~%~<~@{~<[~a] ~a~:>~^  ~}~:@>" choices))
 
-(defun choice-map (map &aux (special '(("s" "skip") ("q" "quit"))))
+(defun choice-map (map &key image &aux (special '(("<Enter>" "skip") ("q" "quit") #+swank("v" "View in external viewer"))))
   (print-choices map t)
   (print-choices special t)
   (format t "~%Select target directory: ")
   (loop for choice = (read-line)
      for ass = (assoc choice map :test 'equalp)
      if (equalp choice "q") do (return :quit)
-     else if (equalp choice "s") do (return :skip)
-     else if ass do (return (third ass))
+     if (equalp choice "") do (return :skip)
+     if ass do (return (third ass))
+     if (equalp choice "v") do
+       (view-file-native image)
+       (format t "~%Select target directory: ")
      else do (format t "~%Invalid choice, try again: ")))
+
+(defun move-file (file dir)
+  (let ((destination (uiop:merge-pathnames* (file-namestring file) (uiop:ensure-directory-pathname dir))))
+    (format t "Moving ~a to ~a" file destination)
+    (rename-file file destination)))
 
 (defun sort-dir (source &key map target)
   (unless target
@@ -65,3 +70,8 @@
     (setf map (generate-map target)))
 
   (loop for image in (sort (find-images source) '< :key 'mtime)
+     for ipath = (path image)
+     for choice = (progn (view-file ipath) (choice-map map :image ipath))
+     if (eql choice :quit) do (return)
+     unless (eql choice :skip)
+     do (move-file ipath choice)))
