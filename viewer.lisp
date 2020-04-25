@@ -7,7 +7,7 @@
   (let ((ns (uiop:native-namestring file)))
     (uiop:launch-program (if *image-app*
                              (append *image-app* (list ns))
-                             ns))))
+                             (uiop:escape-shell-token ns)))))
 
 #+swank
 (defun view-file-slime (file &key (bufname "*image-viewer*"))
@@ -26,7 +26,7 @@
 
 (defun view-file (file)
   #+swank
-  (if *prefer-slime*
+  (if (and *prefer-slime* (not (alexandria:ends-with-subseq ".webp" (namestring file))))
       (view-file-slime file)
       (view-file-native file))
   #-swank
