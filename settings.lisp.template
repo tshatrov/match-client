@@ -10,7 +10,11 @@
 
 (defparameter *root-dirs* '())
 
-(defparameter *allowed-types* '("jpg" "jpeg" "png"))
+(defparameter *exclude-dirs* '())
+
+(defparameter *exclude-dirnames* '())
+
+(defparameter *allowed-types* '("jpg" "jpeg" "png" "webp"))
 
 (defparameter *max-file-size* 10000000)
 
@@ -20,3 +24,7 @@
   `(("^http(s)?://.+\\.pximg\\.net/" . (("Referer" . "https://www.pixiv.net")))
     ("^http(s)?://static\\.tvtropes\\.org/" . (("User-Agent" . ,*browser-user-agent*)))
     ))
+
+(defparameter *image-app* nil)
+
+(defparameter *prefer-slime* nil)

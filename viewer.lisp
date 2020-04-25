@@ -1,6 +1,7 @@
 (in-package #:match-client)
 
 (defvar *image-app* nil)
+(defvar *prefer-slime* nil)
 
 (defun view-file-native (file)
   (let ((ns (uiop:native-namestring file)))
@@ -24,4 +25,9 @@
     ))
 
 (defun view-file (file)
+  #+swank
+  (if *prefer-slime*
+      (view-file-slime file)
+      (view-file-native file))
+  #-swank
   (view-file-native file))
