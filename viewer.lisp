@@ -59,7 +59,7 @@
 
 (defun move-file (file dir)
   (let ((destination (uiop:merge-pathnames* (file-namestring file) (uiop:ensure-directory-pathname dir))))
-    (format t "Moving ~a to ~a" file destination)
+    (format t "Moving ~a to ~a~%" file destination)
     (rename-file file destination)))
 
 (defun sort-dir (source &key map target exclude)
@@ -105,5 +105,5 @@
                  (case (choice-view-match path)
                    (:quit (return))
                    (:skip)
-                   (:delete (format t "Deleting ~a" path)
+                   (:delete (format t "Deleting ~a~%" path)
                             (delete-file path)))))))
