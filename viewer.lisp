@@ -32,12 +32,13 @@
   #-swank
   (view-file-native file))
 
-(defun generate-map (target)
+(defun generate-map (target &key exclude)
   (setf target (uiop:ensure-directory-pathname target))
-  (loop for i from 0
+  (loop with i = 0
      for dir in (sort (uiop:subdirectories target) 'string-lessp :key 'namestring)
      for dirname = (car (last (pathname-directory dir)))
-     collect (list (princ-to-string i) dirname dir)))
+     unless (find dirname exclude :test 'equalp)
+     collect (list (princ-to-string i) dirname dir) and do (incf i)))
 
 (defun print-choices (choices &optional s)
   (format s "~%~<~@{~<[~a] ~a~:>~^  ~}~:@>" choices))
@@ -61,13 +62,13 @@
     (format t "Moving ~a to ~a" file destination)
     (rename-file file destination)))
 
-(defun sort-dir (source &key map target)
+(defun sort-dir (source &key map target exclude)
   (unless target
     (setf target source))
   (setf source (uiop:ensure-directory-pathname source)
         target (uiop:ensure-directory-pathname target))
   (unless map
-    (setf map (generate-map target)))
+    (setf map (generate-map target :exclude exclude)))
 
   (loop for image in (sort (find-images source) '< :key 'mtime)
      for ipath = (path image)

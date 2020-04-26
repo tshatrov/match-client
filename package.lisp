@@ -16,4 +16,5 @@
    #:view-file
    #:view-file-native
    #:view-file-slime
+   #:sort-dir
    ))
