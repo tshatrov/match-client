@@ -82,7 +82,7 @@
                  (api-url "/search")
                  :method :post
                  :content content)))
-    (cond ((string= (or (jsown::val-safe result "status") "fail") "ok")
+    (cond ((string= (or (jsown:val-safe result "status") "fail") "ok")
            (mapcar (lambda (match &aux (score (jsown:val match "score")))
                      (unless (integerp score) (setf (jsown:val match "score") (float score)))
                      match)
@@ -156,7 +156,7 @@
            (cond ((eql result :invalid)
                   (setf (status file) :invalid)
                   (format-msg "Invalid image file: ~a" filepath))
-                 ((string= (or (jsown::val-safe result "status") "fail") "ok")
+                 ((string= (or (jsown:val-safe result "status") "fail") "ok")
                   (setf (status file) :ok)
                   (format-msg "Finished updating ~a" filepath))
                  (t
@@ -167,7 +167,7 @@
          (let ((result (handler-case (delete-path (path file))
                          (error (c) c)))
                (key (namestring (path file))))
-           (cond ((string= (or (jsown::val-safe result "status") "fail") "ok")
+           (cond ((string= (or (jsown:val-safe result "status") "fail") "ok")
                   (bordeaux-threads:with-lock-held (*cache-lock*)
                     (remhash key *cache*))
                   (format-msg "Finished deleting ~a" filepath))
