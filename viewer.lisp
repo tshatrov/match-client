@@ -54,8 +54,8 @@
      if ass do (return (third ass))
      if (equalp choice "v") do
        (view-file-native image)
-       (format t "~%Select target directory: ")
-     else do (format t "~%Invalid choice, try again: ")))
+       (format t "Select target directory: ")
+     else do (format t "Invalid choice, try again: ")))
 
 (defun move-file (file dir)
   (let ((destination (uiop:merge-pathnames* (file-namestring file) (uiop:ensure-directory-pathname dir))))
@@ -76,3 +76,34 @@
      if (eql choice :quit) do (return)
      unless (eql choice :skip)
      do (move-file ipath choice)))
+
+
+(defun choice-view-match (path &aux (choices '(("<Enter>" "keep") ("d" "delete") ("q" "quit") #+swank("v" "View in external viewer"))))
+  (print-choices choices t)
+  (format t "~%Choice: ")
+  (loop for choice = (read-line)
+     if (equalp choice "q") do (return :quit)
+     if (equalp choice "") do (return :skip)
+     if (equalp choice "d") do (return :delete)
+     if (equalp choice "v") do
+       (view-file-native path)
+       (format t "Choice: ")
+     else do (format t "Invalid choice, try again: ")))
+
+(defun view-matches (match-result)
+  (loop
+     with tag-prefix = (format nil "[~a] " *local-tag*)
+     for match in match-result
+     for fp = (jsown:val match "filepath")
+     for path = (when (alexandria:starts-with-subseq tag-prefix fp)
+                  (subseq fp (length tag-prefix)))
+     for exists = (and path (probe-file path))
+     do (cond ((not path) (format t "~%~s is not a local filepath, skipping" fp))
+              ((not exists) (format t "~%~s is not an existing file, skipping" path))
+              (t (view-file path)
+                 (format t "~%~s (score=~a)" path (jsown:val match "score"))
+                 (case (choice-view-match path)
+                   (:quit (return))
+                   (:skip)
+                   (:delete (format t "Deleting ~a" path)
+                            (delete-file path)))))))
