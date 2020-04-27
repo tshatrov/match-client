@@ -10,6 +10,8 @@
 
 (load (asdf:system-relative-pathname :match-client "settings.lisp") :if-does-not-exist nil)
 
+(defvar *last-match* nil)
+
 (defun api-url (path)
   (concatenate 'string *base-url* path))
 
@@ -83,10 +85,11 @@
                  :method :post
                  :content content)))
     (cond ((string= (or (jsown:val-safe result "status") "fail") "ok")
-           (mapcar (lambda (match &aux (score (jsown:val match "score")))
-                     (unless (integerp score) (setf (jsown:val match "score") (float score)))
-                     match)
-                   (jsown:val result "result")))
+           (setf *last-match*
+                 (mapcar (lambda (match &aux (score (jsown:val match "score")))
+                           (unless (integerp score) (setf (jsown:val match "score") (float score)))
+                           match)
+                         (jsown:val result "result"))))
           (t (error "Error: ~a" result)))))
 
 (defun call-on-download (fn url &optional headers)

@@ -90,7 +90,7 @@
        (format t "Choice: ")
      else do (format t "Invalid choice, try again: ")))
 
-(defun view-matches (match-result)
+(defun view-matches (&optional (match-result *last-match*))
   (loop
      with tag-prefix = (format nil "[~a] " *local-tag*)
      for match in match-result
