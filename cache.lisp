@@ -45,7 +45,7 @@
 
 (defmethod print-object ((obj file) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
-    (princ (path obj) stream)))
+    (format stream "~a~@[ ~a~]" (path obj) (status obj))))
 
 (defun make-file (pathname)
   (let ((stat (ewstat pathname)))
@@ -53,6 +53,12 @@
                    :size (sb-posix:stat-size stat)
                    :mtime (unix-to-universal-time (sb-posix:stat-mtime stat))
                    :ctime (unix-to-universal-time (sb-posix:stat-ctime stat)))))
+
+(defun make-file-dummy (pathname &key status)
+  (let ((file (make-instance 'file :path pathname :size 0 :mtime 0 :ctime 0)))
+    (when status
+      (setf (status file) status))
+    file))
 
 (defun load-cache ()
   (if (probe-file *cache-file*)

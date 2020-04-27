@@ -191,3 +191,35 @@
       (lparallel:end-kernel)))
   (format-msg "Final stat: ~a" (stat-cache *cache*))
   (save-cache *cache*))
+
+
+;; utility to mass-delete paths
+
+(defun find-missing-paths (all-paths)
+  (let ((tag-prefix (format nil "[~a] " *local-tag*)))
+    (loop for fp in all-paths
+       for path = (when (alexandria:starts-with-subseq tag-prefix fp)
+                    (subseq fp (length tag-prefix)))
+       for exists = (and path (probe-file path))
+       if (and path (not exists)) collect path)))
+
+(defun delete-paths (paths &key (threads 2))
+  (setf *cache*
+        (if (typep paths 'hash-table)
+            (loop for file being each hash-value of paths
+               do (setf (status file) :delete)
+               finally (return paths))
+            (let ((hash (make-hash-table :test 'equal)))
+              (loop for path in paths
+                   do (setf (gethash (namestring path) hash) (make-file-dummy path :status :delete)))
+              hash)))
+
+  (let ((lparallel:*kernel* (lparallel:make-kernel threads)))
+    (unwind-protect
+         (loop for file in (alexandria:hash-table-values *cache*)
+            collect (worker file) into futures
+            finally (map nil 'lparallel:force futures))
+      (lparallel:end-kernel)))
+
+  (format-msg "Remaining: ~a" (stat-cache *cache*))
+  *cache*)
