@@ -43,18 +43,28 @@
 (defun print-choices (choices &optional s)
   (format s "~%~<~@{~<[~a] ~a~:>~^  ~}~:@>" choices))
 
-(defun choice-map (map &key image &aux (special '(("<Enter>" "skip") ("q" "quit") #+swank("v" "View in external viewer"))))
+(defun choice-map (map &key image
+                   &aux (special '(
+                                   ("<Enter>" "skip") ("q" "quit") ("m" "match") ("d" "delete")
+                                   #+swank("v" "View in external viewer")
+                                   ))
+                     (prompt "Select target directory: "))
+  (format t "~%~a" image)
   (print-choices map t)
   (print-choices special t)
-  (format t "~%Select target directory: ")
+  (format t "~%~a" prompt)
   (loop for choice = (read-line)
      for ass = (assoc choice map :test 'equalp)
      if (equalp choice "q") do (return :quit)
      if (equalp choice "") do (return :skip)
+     if (equalp choice "d") do (return :delete)
      if ass do (return (third ass))
      if (equalp choice "v") do
        (view-file-native image)
-       (format t "Select target directory: ")
+       (format t "~a" prompt)
+     else if (equalp choice "m") do
+       (print (match-resized image))
+       (format t "~%~a" prompt)
      else do (format t "Invalid choice, try again: ")))
 
 (defun move-file (file dir)
@@ -73,9 +83,13 @@
   (loop for image in (sort (find-images source) '< :key 'mtime)
      for ipath = (path image)
      for choice = (progn (view-file ipath) (choice-map map :image ipath))
-     if (eql choice :quit) do (return)
-     unless (eql choice :skip)
-     do (move-file ipath choice)))
+     do (case choice
+          (:quit (return))
+          (:skip)
+          (:delete
+           (format t "Deleting ~a~%" ipath)
+           (delete-file ipath))
+          (t (move-file ipath choice)))))
 
 
 (defun choice-view-match (path &aux (choices '(("<Enter>" "keep") ("d" "delete") ("q" "quit") #+swank("v" "View in external viewer"))))
