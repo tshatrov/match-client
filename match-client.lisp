@@ -144,8 +144,11 @@
     (loop for img-file in images
        for img-path = (path img-file)
        for name = (namestring img-path)
-       for result = (or (match-resized img-path) :not-found)
-       collect (cons name result))))
+       for match = (match-resized img-path)
+       for result = (or match :not-found)
+       collect (cons name result) into results
+       append match into last-match
+       finally (setf *last-match* last-match) (return results))))
 
 (defun worker (file)
   (lparallel:future
