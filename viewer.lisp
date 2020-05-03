@@ -19,8 +19,7 @@
           (insert-image (create-image ,ns))
           (image-mode)
           (setf buffer-file-name ,ns)
-          (not-modified)
-          (image-toggle-display-image))
+          (not-modified))
         ;; try to resize the image after the buffer is displayed
         (with-current-buffer ,bufname (image-toggle-display-image))))))
 
