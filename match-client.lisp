@@ -97,7 +97,18 @@
     (download-with-headers tmp url headers)
     (funcall fn tmp)))
 
-(defun call-on-url-or-path (url-or-path fn-path &optional fn-url)
+(defun pathify (url-or-path)
+  (typecase url-or-path
+    (pathname url-or-path)
+    (t (handler-case (multiple-value-bind (schema ui hostname) (quri:parse-uri url-or-path)
+                       (declare (ignore ui))
+                       (if (and schema hostname)
+                           url-or-path
+                           (pathname url-or-path)))
+         (quri:uri-error () (pathname url-or-path))))))
+
+(defun call-on-url-or-path (url-or-path fn-path &optional fn-url
+                            &aux (url-or-path (pathify url-or-path)))
   (typecase url-or-path
     (pathname (funcall fn-path url-or-path))
     (t (loop for (regex . headers) in *needs-headers*
