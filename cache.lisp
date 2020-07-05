@@ -47,6 +47,12 @@
   (print-unreadable-object (obj stream :type t :identity nil)
     (format stream "~a~@[ ~a~]" (path obj) (status obj))))
 
+;; (defmethod path :around ((file file))
+;;   (translate-canonical-path (call-next-method)))
+
+(defmethod initialize-instance :after ((file file) &key path &allow-other-keys)
+  (setf (slot-value file 'path) (translate-local-path path)))
+
 (defun make-file (pathname)
   (let ((stat (ewstat pathname)))
     (make-instance 'file :path pathname

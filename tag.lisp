@@ -19,7 +19,7 @@
 
 (defun get-tag (name)
   (cond ((typep name 'match-tag) name)
-        ((equal name *local-tag*)
+        ((or (null name) (equal name *local-tag*))
          (make-tag *local-tag*
                    :cache-file *cache-file*
                    :root-dirs *root-dirs*
@@ -35,22 +35,27 @@
              (format stream "No such tag: ~S."
                      (tag-not-found-tag condition)))))
 
+(defun set-tag (name)
+  (let ((tag (get-tag name)))
+    (psetf *local-tag* (tag-name tag)
+           *cache-file* (cache-file tag)
+           *root-dirs* (root-dirs tag)
+           *exclude-dirs* (exclude-dirs tag)
+           *exclude-dirnames* (exclude-dirnames tag)
+           *allowed-types* (allowed-types tag)
+           *translation* (tag-translation tag))))
+
 (defmacro with-tag (name &body body)
-  (alexandria:with-gensyms (tag)
-    `(let ((,tag (get-tag ,name)))
+  (alexandria:with-gensyms (curtag tag)
+    `(let ((,curtag (get-tag nil))
+           (,tag (get-tag ,name)))
        (unless ,tag (error 'tag-not-found :tag ,name))
-       (let ((*local-tag* (tag-name ,tag))
-             (*cache-file* (cache-file ,tag))
-             (*root-dirs* (root-dirs ,tag))
-             (*exclude-dirs* (exclude-dirs ,tag))
-             (*exclude-dirnames* (exclude-dirnames ,tag))
-             (*allowed-types* (allowed-types ,tag))
-             (*translation* (tag-translation ,tag)))
-         ,@body))))
+       (unwind-protect (progn (set-tag ,tag) ,@body)
+         (set-tag ,curtag)))))
 
 (defun translate-local-path (path)
   (if *translation*
-      (translate-pathname path (car *translation*) (cdr *translation*))
+      (translate-pathname path (cdr *translation*) (car *translation*))
       path))
 
 (defun translate-canonical-path (path)
