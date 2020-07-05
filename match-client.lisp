@@ -134,16 +134,16 @@
     (apply 'format t str args)
     (force-output)))
 
-(defun add-resized (path &rest resize-args)
+(defun add-resized (path &rest resize-args &aux (lpath (translate-canonical-path path)))
   (uiop:with-temporary-file (:pathname tmp :prefix "match-thumb" :type (pathname-type path))
-    (multiple-value-bind (out w h rw rh) (apply 'resize-image (namestring path) (namestring tmp) resize-args)
+    (multiple-value-bind (out w h rw rh) (apply 'resize-image (namestring lpath) (namestring tmp) resize-args)
       (let ((metadata (jsown:new-js ("w" w) ("h" h))))
         (cond
           (out
            (jsown:extend-js metadata ("rw" rw) ("rh" rh))
            (add-local tmp :path path :metadata (jsown:to-json* metadata)))
           (t
-           (add-local path :metadata (jsown:to-json* metadata))))))))
+           (add-local lpath :path path :metadata (jsown:to-json* metadata))))))))
 
 (defun match-resized (path &rest resize-args)
   (uiop:with-temporary-file (:pathname tmp :prefix "match-thumb" :type (pathname-type path))

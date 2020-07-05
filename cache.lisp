@@ -6,6 +6,7 @@
 (defvar *exclude-dirnames* '())
 (defvar *allowed-types* '("jpg" "jpeg" "png" "webp"))
 (defvar *max-file-size* 10000000)
+(defvar *mtime-threshold* 10)
 
 ;; *** the following is copied from sync-sbcl
 
@@ -104,7 +105,7 @@
                  (setf (status cur-file) :new
                        (gethash key cache) cur-file))
                 ((or (/= (size cur-file) (size cached-file))
-                     (/= (mtime cur-file) (mtime cached-file)))
+                     (> (abs (- (mtime cur-file) (mtime cached-file))) *mtime-threshold*))
                  (setf (status cur-file) :update
                        (gethash key cache) cur-file)))
          (setf (gethash key visited) t))
