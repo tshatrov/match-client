@@ -6,13 +6,20 @@
 
 (defparameter *local-tag* "HOME")
 
-(defparameter *cache-file* "/home/match-cache")
+(defparameter *cache-file* "/home/user/match-cache")
 
-(defparameter *root-dirs* '())
+(defparameter *root-dirs* '("/home/user/pictures/"))
 
-(defparameter *exclude-dirs* '())
+(defparameter *exclude-dirs* '("/home/user/pictures/old/"))
 
-(defparameter *exclude-dirnames* '())
+(defparameter *exclude-dirnames* '("tmp"))
+
+(defparameter *tags*
+  (list
+   (make-tag "WORK"
+             :cache-file "/home/user/work/match-cache"
+             :root-dirs '("/home/user/work/")
+             :translation '("/home/workuser/**/" . "/home/user/work/**/"))))
 
 (defparameter *allowed-types* '("jpg" "jpeg" "png" "webp"))
 

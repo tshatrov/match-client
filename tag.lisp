@@ -6,9 +6,9 @@
 (defclass match-tag ()
   ((name :reader tag-name :initarg :name)
    (cache-file :accessor cache-file :initarg :cache-file)
-   (root-dirs :accessor root-dirs :initarg :root-dirs)
-   (exclude-dirs :accessor exclude-dirs :initarg :exclude-dirs)
-   (exclude-dirnames :accessor exclude-dirnames :initarg :exclude-dirnames)
+   (root-dirs :accessor root-dirs :initform nil :initarg :root-dirs)
+   (exclude-dirs :accessor exclude-dirs :initform nil :initarg :exclude-dirs)
+   (exclude-dirnames :accessor exclude-dirnames :initform nil :initarg :exclude-dirnames)
    (allowed-types :accessor allowed-types :initform *allowed-types* :initarg :allowed-types)
    (translation :accessor tag-translation :initform nil :initarg :translation
                 :documentation "Cons of 'canonic wildcard' and 'local wildcard'. For example ('d:/**/' . 'e:/**/')")
