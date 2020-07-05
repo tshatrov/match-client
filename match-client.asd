@@ -15,6 +15,7 @@
   :serial t
   :components ((:file "package")
                (:file "image")
+               (:file "tag")
                (:file "cache")
                (:file "match-client")
                (:file "viewer")

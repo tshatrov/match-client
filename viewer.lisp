@@ -105,12 +105,10 @@
 
 (defun view-matches (&optional (match-result *last-match*))
   (loop
-     with tag-prefix = (format nil "[~a] " *local-tag*)
      for match in match-result
      for fp = (jsown:val match "filepath")
      for meta = (jsown:val match "metadata")
-     for path = (when (alexandria:starts-with-subseq tag-prefix fp)
-                  (subseq fp (length tag-prefix)))
+     for path = (get-local-path fp)
      for exists = (and path (probe-file path))
      do (cond ((not path) (format t "~%~s is not a local filepath, skipping" fp))
               ((not exists) (format t "~%~s is not an existing file, skipping" path))
