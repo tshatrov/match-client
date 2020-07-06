@@ -18,4 +18,10 @@
    #:view-file-slime
    #:sort-dir
    #:view-matches
+   #:make-tag
+   #:get-tag
+   #:set-tag
+   #:with-tag
+   #:tag-not-found
+   #:get-local-path
    ))
