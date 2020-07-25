@@ -192,7 +192,7 @@
                   (setf (status file) :error (message file) result)
                   (format-msg "Error deleting ~a: ~a" filepath result)))))))))
 
-(defun update (&key (threads 2))
+(defun update (&key (threads 4))
   (format-msg "Updating cache...")
   (force-output)
   (setf *cache* (update-cache))

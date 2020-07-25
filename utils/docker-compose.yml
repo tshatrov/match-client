@@ -1,0 +1,32 @@
+version: '2'
+services:
+  match:
+    image: dsys/match:latest
+    ports:
+    - 127.0.0.1:8888:8888
+    command:  ["/wait-for-it.sh", "-t", "60", "elasticsearch:9200", "--", "gunicorn", "-b", "0.0.0.0:8888", "-w", "4", "--preload", "server:app"]
+    links:
+    - elasticsearch
+  elasticsearch:
+    image: elasticsearch:6.8.10
+    ports:
+    - 127.0.0.1:9200:9200
+    environment:
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - "MAX_LOCKED_MEMORY=unlimited"
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+    ulimits:
+       memlock:
+          soft: -1
+          hard: -1
+    expose:
+    - "9200"
+    mem_limit: 1g
+    volumes:
+          - idata:/usr/share/elasticsearch/data
+
+
+volumes:
+  idata:
+      driver: local
