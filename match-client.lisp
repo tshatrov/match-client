@@ -118,10 +118,18 @@
                               (funcall fn-url url-or-path)
                               (call-on-download fn-path url-or-path)))))))
 
+(defun match-local (path)
+  (match* `(("image" . ,path))))
+
+(defun match-resized (path &rest resize-args)
+  (uiop:with-temporary-file (:pathname tmp :prefix "match-thumb" :type (pathname-type path))
+    (let ((out (apply 'resize-image (namestring path) (namestring tmp) resize-args)))
+      (match-local (if out tmp path)))))
+
 (defun match (url-or-path &optional download-p)
   (call-on-url-or-path
    url-or-path
-   (lambda (f) (match* `(("image" . ,f))))
+   'match-resized
    (unless download-p (lambda (f) (match* `(("url" . ,f)))))))
 
 (defvar *cache*)
@@ -144,11 +152,6 @@
            (add-local tmp :path path :metadata (jsown:to-json* metadata)))
           (t
            (add-local lpath :path path :metadata (jsown:to-json* metadata))))))))
-
-(defun match-resized (path &rest resize-args)
-  (uiop:with-temporary-file (:pathname tmp :prefix "match-thumb" :type (pathname-type path))
-    (let ((out (apply 'resize-image (namestring path) (namestring tmp) resize-args)))
-      (if out (match tmp) (match path)))))
 
 (defun match-dir (path)
   (let ((images (find-images path)))
