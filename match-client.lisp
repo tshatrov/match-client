@@ -92,10 +92,14 @@
                          (jsown:val result "result"))))
           (t (error "Error: ~a" result)))))
 
+(defun get-url-filetype (url &key (default "jpg"))
+  (let ((path (quri:uri-path (quri:uri url))))
+    (or (and path (pathname-type path)) default)))
+
 (defun call-on-download (fn url &optional headers)
-  (uiop:with-temporary-file (:pathname tmp :prefix "match-dl" :type (pathname-type url))
+  (uiop:with-temporary-file (:pathname tmp :prefix "match-dl" :type (get-url-filetype url))
     (download-with-headers tmp url headers)
-    (funcall fn tmp)))
+    (funcall fn tmp))))
 
 (defun pathify (url-or-path)
   (typecase url-or-path
