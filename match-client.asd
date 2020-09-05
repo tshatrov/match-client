@@ -5,6 +5,7 @@
   :author "Timofei Shatrov <timofei.shatrov@gmail.com>"
   :license "MIT"
   :depends-on (#:dexador
+               #:drakma
                #:alexandria
                #:jsown
                #:cl-store

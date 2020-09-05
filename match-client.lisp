@@ -68,8 +68,8 @@
 (defun download-with-headers (out url &optional headers)
   (let ((dex:*use-connection-pool* nil))
     (multiple-value-bind (content code)
-        (dex:request url :headers headers
-                     :force-binary t :want-stream t)
+        (drakma:http-request url :additional-headers headers :force-binary t :want-stream t)
+        #-(and)(dex:request url :headers headers :force-binary t :want-stream t)
       (unwind-protect
            (when (= code 200)
              (with-open-file (stream out :direction :output :if-exists :supersede
