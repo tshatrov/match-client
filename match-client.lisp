@@ -99,7 +99,7 @@
 (defun call-on-download (fn url &optional headers)
   (uiop:with-temporary-file (:pathname tmp :prefix "match-dl" :type (get-url-filetype url))
     (download-with-headers tmp url headers)
-    (funcall fn tmp))))
+    (funcall fn tmp)))
 
 (defun pathify (url-or-path)
   (typecase url-or-path
