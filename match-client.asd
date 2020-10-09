@@ -35,3 +35,28 @@
   :serial t
   :components ((:file "twigaten"))
   )
+
+
+(asdf:defsystem #:match-client/saucenao
+  :description "Saucenao search addon"
+  :author "Timofei Shatrov <timofei.shatrov@gmail.com>"
+  :license "MIT"
+  :depends-on (#:match-client
+               #:cxml
+               #:closure-html
+               #:css-selectors
+               #:parse-float
+               )
+  :serial t
+  :components ((:file "saucenao"))
+  )
+
+
+(asdf:defsystem #:match-client/all
+  :description "All match-client addons"
+  :author "Timofei Shatrov <timofei.shatrov@gmail.com>"
+  :license "MIT"
+  :depends-on (#:match-client/twigaten
+               #:match-client/saucenao
+               )
+  )
