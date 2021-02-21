@@ -50,7 +50,7 @@
                         :method :post
                         :max-redirects 0
                         :content `(("file" . ,(pathname f))))
-         (cond ((= code 302)
+         (cond ((find code '(302 303))
                 (parse-twigaten-response
                  (dex:request (format nil *twigaten-root* (gethash "location" headers)))))
                ((= code 200) nil)
