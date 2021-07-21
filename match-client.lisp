@@ -127,8 +127,9 @@
 
 (defun match-resized (path &rest resize-args)
   (uiop:with-temporary-file (:pathname tmp :prefix "match-thumb" :type (pathname-type path))
-    (let ((out (apply 'resize-image (namestring path) (namestring tmp) resize-args)))
-      (match-local (if out tmp path)))))
+    (multiple-value-bind (out w h) (apply 'resize-image (namestring path) (namestring tmp) resize-args)
+      (values (match-local (if out tmp path))
+              (list w h)))))
 
 (defun match (url-or-path &optional download-p)
   (call-on-url-or-path
