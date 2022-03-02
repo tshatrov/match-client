@@ -23,7 +23,6 @@
     (setf args `(,@args :basic-auth ,*auth*)))
   (when *debug*
     (setf args (append args '(:verbose t)))) ;; :keep-alive nil :use-connection-pool nil
-
   (multiple-value-bind (content return-code)
       (prog ((retries 0))
        retry
@@ -66,10 +65,15 @@
    ))
 
 (defun download-with-headers (out url &optional headers)
-  (let ((dex:*use-connection-pool* nil))
+  (let ((dex:*use-connection-pool* nil)
+        (needs-proxy (and *proxy*
+                          (loop for regex in *needs-proxy*
+                                  thereis (ppcre:scan regex url)))))
+
     (multiple-value-bind (content code)
-        (drakma:http-request url :additional-headers headers :force-binary t :want-stream t)
-        #-(and)(dex:request url :headers headers :force-binary t :want-stream t)
+        (if needs-proxy
+            (dex:request url :headers headers :force-binary t :want-stream t :proxy *proxy*)
+            (drakma:http-request url :additional-headers headers :force-binary t :want-stream t))
       (unwind-protect
            (when (= code 200)
              (with-open-file (stream out :direction :output :if-exists :supersede
@@ -132,6 +136,7 @@
               (list w h)))))
 
 (defun match (url-or-path &optional download-p)
+  (setf download-p (and download-p (loop for regex in *never-download* never (ppcre:scan regex url-or-path))))
   (call-on-url-or-path
    url-or-path
    'match-resized

@@ -32,6 +32,15 @@
     ("^http(s)?://static\\.tvtropes\\.org/" . (("User-Agent" . ,*browser-user-agent*)))
     ))
 
+;; never download these regex urls
+(defparameter *never-download* nil)
+
+;; use proxy (currently works without auth only...)
+(defparameter *proxy* nil)
+
+;; list of regex of urls that need proxy
+(defparameter *needs-proxy* nil)
+
 (defparameter *image-app* nil)
 
 (defparameter *prefer-slime* nil)
