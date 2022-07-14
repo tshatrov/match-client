@@ -164,7 +164,7 @@
            (add-local lpath :path path :metadata (jsown:to-json* metadata))))))))
 
 (defun match-dir (path)
-  (let ((images (find-images path)))
+  (let ((images (let ((*translation* nil)) (find-images path))))
     (loop for img-file in images
        for img-path = (path img-file)
        for name = (namestring img-path)

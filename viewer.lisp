@@ -79,7 +79,7 @@
   (unless map
     (setf map (generate-map target :exclude exclude)))
 
-  (loop for image in (sort (find-images source) '< :key 'mtime)
+  (loop for image in (sort (let ((*translation* nil)) (find-images source)) '< :key 'mtime)
      for ipath = (path image)
      for choice = (progn (view-file ipath) (choice-map map :image ipath))
      do (case choice
